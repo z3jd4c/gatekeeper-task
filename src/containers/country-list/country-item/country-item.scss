@@ -1,0 +1,13 @@
+.country-item {
+  padding: 10px;
+  border: 1px solid #cdcdcd;
+}
+
+.selected {
+  background: #d8d8d8;
+}
+
+.country-item:hover {
+  cursor:pointer;
+  background: #e6e4e4;
+}
