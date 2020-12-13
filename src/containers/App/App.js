@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CountryList from '../country-list/country-list';
+import WeatherPopup from '../../components/weather-popup/weather-popup';
 import { renderToString } from 'react-dom/server'
 import mapboxgl from 'mapbox-gl';
 import axios from 'axios';
+import { credentials } from '../../constants/credentials';
 import './App.scss';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiejNqZDRjIiwiYSI6ImNraW45eWt6MjExN3cydXFqem5xZ3ZmbGoifQ.uaLGQlRqfN2LoNCcEv3enw';
-const API_KEY = '1070dfd72c908673e91d1a7f395d8976';
+mapboxgl.accessToken = credentials.mapboxToken;
 
 function App() {
   const [ map, setMap ] = useState();
@@ -16,7 +17,7 @@ function App() {
   );
 
   useEffect(() => {
-    const initializeMap = ({ setMap, mapContainer, flyTo }) => {
+    const initializeMap = ({ setMap, mapContainer }) => {
       const map = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v11',
@@ -28,12 +29,11 @@ function App() {
           setMap(map);
           map.resize();
           currentCoordinates && addMarker(currentCoordinates, map)
-
         });
     }
 
     if(!map) {
-      initializeMap({ setMap, mapContainer, flyTo })
+      initializeMap({ setMap, mapContainer })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ map, currentCoordinates ]);
@@ -41,28 +41,12 @@ function App() {
   const mapContainer = useRef(null);
 
   const loadWeatherInfoByCoordinates = async (coordinates) => {
-    return axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${ coordinates.x }&lon=${ coordinates.y }&appid=${ API_KEY }&units=metric`);
+    return axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${ coordinates.x }&lon=${ coordinates.y }&appid=${ credentials.weatherApiToken }&units=metric`);
   }
 
   const renderPopup = (mainWeatherData) => {
     const element = (
-      <div>
-        <div>
-          <b>Temp:</b> { mainWeatherData.temp } <span>&#176;</span>C
-        </div>
-        <div>
-          <b>Feels like:</b> { mainWeatherData.feels_like } <span>&#176;</span>C
-        </div>
-        <div>
-          <b>Min temp:</b> { mainWeatherData.temp_min } <span>&#176;</span>C
-        </div>
-        <div>
-          <b>Max temp:</b> { mainWeatherData.temp_max } <span>&#176;</span>C
-        </div>
-        <div>
-          <b>Humidity:</b> { mainWeatherData.humidity } %
-        </div>
-      </div>
+      <WeatherPopup mainWeatherData={ mainWeatherData } />
     );
 
     return renderToString(element); 
@@ -98,7 +82,6 @@ function App() {
 
     setMarker(newMarker);
     }
-
   }
 
   return (
